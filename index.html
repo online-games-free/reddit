@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Media Downloader</title>
+    
+    <!-- Google Fonts for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS STYLES --- */
+
+        /* --- Basic Page Styling --- */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a1b; /* Reddit-like dark theme */
+            color: #d7dadc;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            background-color: #272729;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-top: 30px;
+        }
+
+        h1 {
+            color: #ff4500; /* Reddit orange */
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #a8a8a8;
+            margin-bottom: 2rem;
+        }
+
+        /* --- THE IMPORTANT PART: Iframe Styling --- */
+
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            height: 450px; /* This is the VISIBLE height of the tool */
+            border: 1px solid #444;
+            border-radius: 8px;
+            
+            /* This is the most important property! It hides whatever is pushed outside this container. */
+            overflow: hidden; 
+            
+            background-color: #ffffff;
+        }
+
+        #downloader-iframe {
+            width: 100%;
+            
+            /* The new page has a taller header, so we hide more space. */
+            /* We make the iframe taller to account for the hidden area (280px). */
+            height: calc(450px + 280px);
+            
+            border: none;
+            
+            /* This is the KEY CHANGE. We push the iframe up by 280px to hide the new, larger header. */
+            margin-top: -180px; 
+        }
+
+        #loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        /* --- Footer --- */
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.8rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- --- HTML CONTENT --- -->
+
+    <div class="container">
+        <h1>Reddit Photo & Video Downloader</h1>
+        <p>Paste a Reddit post URL below and press Enter to download its media.</p>
+
+        <!-- This wrapper will hide the top part of the iframe -->
+        <div class="iframe-wrapper">
+            <!-- Simple loading message -->
+            <div id="loading-indicator">Loading Downloader...</div>
+            
+            <!-- The iframe now points to the specific Reddit downloader page -->
+            <iframe 
+                id="downloader-iframe" 
+                src="https://www.toolsmart.ai/feature-free-reddit-video-downloader/"
+                frameborder="0"
+                scrolling="no">
+            </iframe>
+        </div>
+
+        <div class="footer">
+            <p>Powered by an embedded tool from toolsmart.ai. This site is a functional demonstration of iframe integration.</p>
+        </div>
+    </div>
+
+    <script>
+        /* --- JAVASCRIPT LOGIC (No changes needed here) --- */
+
+        document.addEventListener("DOMContentLoaded", function() {
+            
+            const iframe = document.getElementById('downloader-iframe');
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+            if (iframe && loadingIndicator) {
+                
+                iframe.addEventListener('load', function() {
+                    // Hide the "Loading..." message once the iframe content is ready
+                    loadingIndicator.style.display = 'none';
+                });
+
+            } else {
+                console.error("Iframe or loading indicator not found!");
+            }
+
+        });
+    </script>
+</body>
+</html>
