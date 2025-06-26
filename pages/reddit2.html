@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Media Downloader Pro</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- CSS RESET --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* --- GLOBAL STYLES --- */
+        :root {
+            --reddit-orange: #ff4500;
+            --dark-bg: #1a1a1b;
+            --container-bg: #272729;
+            --text-light: #d7dadc;
+            --text-gray: #a8a8a8;
+            --border-color: #444;
+            --progress-gradient: linear-gradient(90deg, #ff4500, #ff8c42);
+            --overlay-bg: rgba(39, 39, 41, 0.95);
+            --btn-hover: #ff6a33;
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255, 69, 0, 0.1) 0%, transparent 55%),
+                radial-gradient(circle at 75% 75%, rgba(255, 69, 0, 0.1) 0%, transparent 55%);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--container-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .header {
+            padding: 25px 30px 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--reddit-orange);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-gray);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* Device indicator */
+        .device-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--reddit-orange);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Main content */
+        .content {
+            padding: 25px 30px 30px;
+        }
+        
+        /* Iframe Wrapper */
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            margin: 0 auto;
+            transition: height 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        #downloader-iframe {
+            width: 100%;
+            border: none;
+            display: block;
+            pointer-events: none;
+        }
+        
+        /* Progress Bar */
+        #progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 6px;
+            background: var(--progress-gradient);
+            width: 0%;
+            z-index: 30;
+            transition: width 0.1s linear;
+            border-radius: 0 0 3px 3px;
+        }
+        
+        /* Overlay */
+        #iframe-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 20;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            transition: var(--transition);
+        }
+        
+        .overlay-content {
+            text-align: center;
+            padding: 30px;
+            max-width: 90%;
+        }
+        
+        .overlay-icon {
+            font-size: 3.5rem;
+            color: var(--reddit-orange);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        .overlay-text {
+            background: var(--overlay-bg);
+            padding: 25px 30px;
+            border-radius: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+            border: 1px solid var(--reddit-orange);
+            box-shadow: 0 8px 25px rgba(255, 69, 0, 0.3);
+        }
+        
+        .overlay-text h3 {
+            color: var(--reddit-orange);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .overlay-text p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: var(--text-gray);
+        }
+        
+        .timer-hint {
+            display: inline-block;
+            background: rgba(255, 69, 0, 0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: var(--reddit-orange);
+            margin-top: 10px;
+        }
+        
+        /* Loading Indicator */
+        #loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 69, 0, 0.2);
+            border-top: 5px solid var(--reddit-orange);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: var(--reddit-orange);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        
+        .control-btn:hover {
+            background: var(--btn-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 69, 0, 0.4);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        .control-btn i {
+            font-size: 1.1rem;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+        
+        .blocked-list {
+            display: inline-block;
+            background: rgba(255, 69, 0, 0.1);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
+        @media (min-width: 769px) {
+            .device-indicator::after {
+                content: "Desktop View";
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 12px;
+            }
+            
+            .header {
+                padding: 20px 15px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .content {
+                padding: 20px 15px 25px;
+            }
+            
+            .iframe-wrapper {
+                height: 315px;
+            }
+            
+            .overlay-text {
+                padding: 20px;
+            }
+            
+            .overlay-text h3 {
+                font-size: 1.5rem;
+            }
+            
+            .overlay-text p {
+                font-size: 1rem;
+            }
+            
+            .device-indicator::after {
+                content: "Mobile View";
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .control-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .iframe-wrapper {
+                height: 280px;
+            }
+            
+            .overlay-content {
+                padding: 15px;
+            }
+            
+            .overlay-text {
+                padding: 15px;
+            }
+            
+            .overlay-text h3 {
+                font-size: 1.3rem;
+            }
+            
+            .control-btn {
+                flex: 1;
+                min-width: 120px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="device-indicator"></div>
+        
+        <div class="header">
+            <h1>Reddit Media Downloader</h1>
+            <p class="subtitle">Paste any Reddit post URL to download photos, videos, and GIFs. Interact with the tool to expand the view.</p>
+        </div>
+        
+        <div class="content">
+            <div class="iframe-wrapper" id="iframe-wrapper">
+                <div id="progress-bar"></div>
+                
+                <div id="iframe-overlay">
+                    <div class="overlay-content">
+                        <div class="overlay-icon">
+                            <i class="fas fa-hand-pointer"></i>
+                        </div>
+                        <div class="overlay-text">
+                            <h3>Click to Activate</h3>
+                            <p>Interact with this area to expand the downloader tool and reveal more options</p>
+                            <div class="timer-hint">Expands automatically after 7 seconds</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="loading-indicator">
+                    <div class="loading-spinner"></div>
+                    Loading Downloader...
+                </div>
+                
+                <!-- FIXED: Added allow-downloads to sandbox to enable downloads -->
+                <iframe 
+                    id="downloader-iframe" 
+                    src="https://www.toolsmart.ai/feature-free-reddit-video-downloader/"
+                    frameborder="0"
+                    scrolling="no"
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-downloads">
+                </iframe>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" id="reset-btn">
+                    <i class="fas fa-sync-alt"></i> Reset Tool
+                </button>
+                <button class="control-btn" id="expand-btn">
+                    <i class="fas fa-expand"></i> Expand Now
+                </button>
+                <button class="control-btn" id="collapse-btn">
+                    <i class="fas fa-compress"></i> Collapse
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Powered by an embedded tool from toolsmart.ai. This site demonstrates advanced iframe integration techniques.</p>
+            <div class="blocked-list">
+                Blocked redirects: youtube.com, facebook.com, instagram.com, twitter.com, tiktok.com
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Elements
+            const iframe = document.getElementById('downloader-iframe');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const iframeWrapper = document.getElementById('iframe-wrapper');
+            const progressBar = document.getElementById('progress-bar');
+            const iframeOverlay = document.getElementById('iframe-overlay');
+            const resetBtn = document.getElementById('reset-btn');
+            const expandBtn = document.getElementById('expand-btn');
+            const collapseBtn = document.getElementById('collapse-btn');
+            
+            // Blocked domains
+            const blockedDomains = [
+                'youtube.com',
+                'facebook.com',
+                'instagram.com',
+                'twitter.com',
+                'tiktok.com'
+            ];
+            
+            // State variables
+            let timerActive = false;
+            let timerId = null;
+            let isExpanded = false;
+            
+            // Initialize iframe view
+            function initializeIframeView() {
+                const isDesktop = window.matchMedia('(min-width: 769px)').matches;
+                
+                if (isDesktop) {
+                    // Desktop initial view
+                    iframeWrapper.style.height = '150px';
+                    iframe.style.height = '600px';
+                    iframe.style.marginTop = '-240px';
+                } else {
+                    // Mobile initial view
+                    iframeWrapper.style.height = '150px';
+                    iframe.style.height = '400px';
+                    iframe.style.marginTop = '-200px';
+                }
+            }
+            
+            // Expand iframe view
+            function expandIframeView() {
+                const isDesktop = window.matchMedia('(min-width: 769px)').matches;
+                
+                if (isDesktop) {
+                    // Desktop expanded view
+                    iframeWrapper.style.height = '1150px';
+                    iframe.style.height = '1900px';
+                    iframe.style.marginTop = '-250px';
+                } else {
+                    // Mobile expanded view
+                    iframeWrapper.style.height = '1780px';
+                    iframe.style.height = '2000px';
+                    iframe.style.marginTop = '-140px';
+                }
+            }
+            
+            // Start timer
+            function startTimer() {
+                if (timerActive) return;
+                
+                timerActive = true;
+                iframeOverlay.style.opacity = '0';
+                
+                // Fade out overlay
+                setTimeout(() => {
+                    iframeOverlay.style.display = 'none';
+                    iframe.style.pointerEvents = 'auto';
+                }, 300);
+                
+                // Progress bar animation
+                let width = 0;
+                const interval = 70; // 70ms for 7 seconds
+                const increment = 100 / (7000 / interval);
+                
+                timerId = setInterval(() => {
+                    width += increment;
+                    progressBar.style.width = width + '%';
+                    
+                    if (width >= 100) {
+                        clearInterval(timerId);
+                        progressBar.style.width = '0%';
+                        expandIframe();
+                        timerActive = false;
+                    }
+                }, interval);
+            }
+            
+            // Expand iframe
+            function expandIframe() {
+                isExpanded = true;
+                expandIframeView();
+                iframe.style.pointerEvents = 'auto';
+                clearTimer();
+            }
+            
+            // Collapse iframe
+            function collapseIframe() {
+                isExpanded = false;
+                initializeIframeView();
+                iframe.style.pointerEvents = 'none';
+                iframeOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    iframeOverlay.style.opacity = '1';
+                }, 10);
+                clearTimer();
+            }
+            
+            // Clear timer
+            function clearTimer() {
+                if (timerId) {
+                    clearInterval(timerId);
+                    timerId = null;
+                }
+                progressBar.style.width = '0%';
+                timerActive = false;
+            }
+            
+            // Reset iframe
+            function resetIframe() {
+                iframe.src = iframe.src;
+                loadingIndicator.style.display = 'flex';
+                collapseIframe();
+                
+                // Re-hide loading indicator when iframe reloads
+                iframe.addEventListener('load', function onLoad() {
+                    loadingIndicator.style.display = 'none';
+                    iframe.removeEventListener('load', onLoad);
+                });
+            }
+            
+            // Block navigation to specific domains
+            window.addEventListener('message', function(event) {
+                try {
+                    // Check if message is a string that can be parsed as URL
+                    if (typeof event.data === 'string' && event.data.startsWith('http')) {
+                        const url = new URL(event.data);
+                        
+                        // Check if URL is in blocked domains
+                        const isBlocked = blockedDomains.some(domain => 
+                            url.hostname.includes(domain)
+                        );
+                        
+                        if (isBlocked) {
+                            event.preventDefault();
+                            alert(`🚫 Navigation to ${url.hostname} is blocked on this site.`);
+                        }
+                    }
+                } catch (e) {
+                    // Not a valid URL, ignore
+                }
+            });
+            
+            // Initial setup
+            initializeIframeView();
+            
+            // Event listeners
+            iframeOverlay.addEventListener('click', startTimer);
+            resetBtn.addEventListener('click', resetIframe);
+            expandBtn.addEventListener('click', expandIframe);
+            collapseBtn.addEventListener('click', collapseIframe);
+            
+            // Handle iframe load
+            iframe.addEventListener('load', function() {
+                loadingIndicator.style.display = 'none';
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (isExpanded) {
+                    expandIframeView();
+                } else {
+                    initializeIframeView();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
